@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"google.golang.org/api/calendar/v3"
@@ -19,11 +20,16 @@ var (
 func main() {
 	flag.BoolVar(&update, "update", false, "update token")
 	flag.StringVar(&calendarID, "calendar", "", "calendar id")
+	credentialFile := flag.String("credential", "credential.json", "service-account json file")
 	flag.Parse()
-	client := getClient(calendar.CalendarReadonlyScope, "credentials.json")
 	ctx := context.Background()
 
-	srv, err := calendar.NewService(ctx, option.WithHTTPClient(client))
+	authConfigJson, err := os.ReadFile(*credentialFile)
+	if err != nil {
+		log.Fatalf("unable marshal credentials: %v", err)
+	}
+
+	srv, err := calendar.NewService(ctx, option.WithCredentialsJSON(authConfigJson))
 	if err != nil {
 		log.Fatalf("Unable to retrieve Calendar client: %v", err)
 	}
